@@ -8,6 +8,7 @@ A modern, scalable, and secure cloud-based attendance management system designed
 - Real-time attendance marking and management
 - Cloud storage for secure and reliable data access
 - Role-based access (Admin, User, etc.)
+- Authentication for all roles (Admin, User, Student) is powered by **AWS Cognito**
 - Detailed attendance reports and analytics
 - Easy integration with existing systems
 - Responsive design for desktop and mobile
