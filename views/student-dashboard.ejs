@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= user.name %> - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .profile-card { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .attendance-card { border-left: 4px solid #0d6efd; transition: all 0.3s ease; }
+        .attendance-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        .progress { height: 25px; border-radius: 12px; }
+        .progress-bar { font-weight: 600; font-size: 14px; }
+        .core-badge { background-color: #6f42c1; }
+        .elective-badge { background-color: #fd7e14; }
+        .initials-avatar { 
+            width: 120px; height: 120px; 
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/student/dashboard">
+                <i class="fas fa-calendar-check me-2"></i>Attendance System
+            </a>
+            <div class="d-flex">
+                <span class="navbar-text me-3 d-none d-sm-block">
+                    <i class="fas fa-user me-1"></i> <%= student.name %>
+                </span>
+                <a href="/login" class="btn btn-outline-light">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Alerts -->
+        <% if (success) { %>
+            <div class="alert alert-success alert-dismissible fade show">
+                <%= success %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+        <% if (error) { %>
+            <div class="alert alert-danger alert-dismissible fade show">
+                <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <div class="row">
+            <!-- Student Profile -->
+            <div class="col-lg-4 mb-4">
+                <div class="card profile-card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-user-graduate me-2"></i>Student Profile
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <div class="bg-primary text-white rounded-circle initials-avatar mx-auto">
+                                <%= student.name.split(' ').map(n => n[0]).join('') %>
+                            </div>
+                        </div>
+                        <h4 class="text-center"><%= student.name %></h4>
+                        <hr>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong><i class="fas fa-id-card me-2"></i>ER Number:</strong> <%= student.er_number %></p>
+                            <p class="mb-1"><strong><i class="fas fa-envelope me-2"></i>Email:</strong> <%= student.email %></p>
+                            <% if (student.batch) { %>
+                                <p class="mb-0"><strong><i class="fas fa-users me-2"></i>Batch:</strong> <%= student.batch.name %></p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Summary -->
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-chart-line me-2"></i>Attendance Summary
+                            </h3>
+                            <span class="badge bg-light text-dark">
+                                <%= subjectAttendance.length %> Subjects
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <% if (subjectAttendance.length > 0) { %>
+                            <div class="row row-cols-1 row-cols-md-2 g-4">
+                                <% subjectAttendance.forEach(item => { %>
+                                    <div class="col">
+                                        <div class="card attendance-card h-100">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <h5 class="card-title mb-0">
+                                                        <%= item.subject.name %>
+                                                    </h5>
+                                                    <span class="badge <%= item.subject.type === 'Core' ? 'core-badge' : 'elective-badge' %>">
+                                                        <%= item.subject.type %>
+                                                    </span>
+                                                </div>
+                                                <p class="text-muted small mb-3">
+                                                    <i class="fas fa-code me-1"></i> <%= item.subject.code %>
+                                                    <span class="mx-2">|</span>
+                                                    <i class="fas fa-calendar-alt me-1"></i> <%= item.totalClasses %> classes
+                                                </p>
+                                                
+                                                <div class="mb-3">
+                                                    <div class="d-flex justify-content-between mb-1">
+                                                        <span>Attendance</span>
+                                                        <span><%= item.percentage %>% (<%= item.presentCount %>/<%= item.totalClasses %>)</span>
+                                                    </div>
+                                                    <div class="progress">
+                                                        <div class="progress-bar 
+                                                            <%= item.percentage >= 75 ? 'bg-success' : 
+                                                                item.percentage >= 50 ? 'bg-warning' : 'bg-danger' %>" 
+                                                            role="progressbar" 
+                                                            style="width: <%= item.percentage %>%">
+                                                            <%= item.percentage %>%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        <% } else { %>
+                            <div class="text-center py-4">
+                                <i class="fas fa-book-open fa-4x text-muted mb-3"></i>
+                                <h4>No Enrolled Subjects</h4>
+                                <p class="text-muted">Contact your administrator to enroll in subjects.</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

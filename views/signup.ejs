@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - Cloud-Based Attendance System</title>
+  <%- include('partials/styles') %>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .signup-container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .input-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: #2575fc;
+      outline: none;
+    }
+    .signup-button {
+      width: 100%;
+      padding: 0.75rem;
+      background: #2575fc;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .signup-button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .error-message {
+      color: #ff4d4d;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    .signup-footer a {
+      color: #2575fc;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <h1>Create an Account</h1>
+    <p>Join us to get started.</p>
+
+    <% if (messages && messages.error) { %>
+      <div class="error-message" style="display: block;">
+        <%= messages.error %>
+      </div>
+    <% } %>
+    <% if (messages && messages.success) { %>
+      <div class="error-message" style="color: #28a745; display: block;">
+        <%= messages.success %>
+      </div>
+    <% } %>
+
+    <form id="signup-form">
+      <div class="input-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+      </div>
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+      </div>
+      <div class="input-group">
+        <label for="role">Select Role</label>
+        <select id="role" name="role" required>
+          <option value="">Select your role</option>
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+        </select>
+      </div>
+      <div class="input-group" id="studentIdGroup">
+        <label for="studentId">Student ID</label>
+        <input type="text" id="studentId" name="studentId" placeholder="Enter your Student ID">
+      </div>
+      <div class="input-group" id="teacherIdGroup" style="display: none;">
+        <label for="teacherId">Teacher ID</label>
+        <input type="text" id="teacherId" name="teacherId" placeholder="Enter your Teacher ID">
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+      </div>
+      <div class="input-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+      </div>
+      <div class="error-message" id="error-message"></div>
+      <button type="submit" class="signup-button" id="signup-button">Sign Up</button>
+    </form>
+    <div class="signup-footer">
+      <p>Already have an account? <a href="/login">Login</a></p>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "<%= process.env.API_URL %>";
+    const signupButton = document.getElementById('signup-button');
+    
+    // Reset button state when page loads
+    window.addEventListener('load', () => {
+        signupButton.disabled = false;
+        signupButton.textContent = 'Sign Up';
+    });
+
+    // Show/hide ID fields based on role
+    document.getElementById('role').addEventListener('change', function() {
+      const role = this.value;
+      document.getElementById('studentIdGroup').style.display = role === 'student' ? 'block' : 'none';
+      document.getElementById('teacherIdGroup').style.display = role === 'teacher' ? 'block' : 'none';
+      
+      // Make ID fields required based on role
+      document.getElementById('studentId').required = role === 'student';
+      document.getElementById('teacherId').required = role === 'teacher';
+    });
+
+    // Pre-warm the connection if network is good
+    if (navigator.connection && navigator.connection.effectiveType !== 'slow-2g') {
+      fetch(`${API_URL}/ping`, { method: 'HEAD' }).catch(() => {});
+    }
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorElement = document.getElementById('error-message');
+      const originalButtonText = signupButton.textContent;
+      
+      // Update UI
+      signupButton.disabled = true;
+      signupButton.textContent = 'Creating account...';
+      errorElement.style.display = 'none';
+      
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        confirmPassword: document.getElementById('confirmPassword').value,
+        role: document.getElementById('role').value,
+        studentId: document.getElementById('studentId').value,
+        teacherId: document.getElementById('teacherId').value
+      };
+
+      try {
+        // Set timeout for the signup request (8 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        const response = await fetch(`${API_URL}/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Signup failed");
+        }
+
+        // Redirect to login with success message
+        window.location.href = '/login?success=Registration successful! Please login.';
+        
+      } catch (error) {
+        // Restore UI
+        signupButton.disabled = false;
+        signupButton.textContent = originalButtonText;
+        
+        // Show appropriate error message
+        errorElement.textContent = error.name === 'AbortError' 
+          ? "Signup timed out. Please try again." 
+          : error.message;
+        errorElement.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

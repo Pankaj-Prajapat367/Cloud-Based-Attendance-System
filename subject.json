@@ -1,0 +1,56 @@
+[
+    {
+      "code": "18B17CI673",
+      "name": "ADVANCED PROGRAMMING LAB-3",
+      "credit": 1,
+      "type": "Core"
+    },
+    {
+      "code": "18B17CI474",
+      "name": "COMPUTER ORGANISATION AND ARCHITECTURE LAB",
+      "credit": 1,
+      "type": "Core"
+    },
+    {
+      "code": "18B17CI672",
+      "name": "SOFTWARE ENGINEERING LAB",
+      "credit": 1,
+      "type": "Core"
+    },
+    {
+      "code": "18B19CI691",
+      "name": "MINOR PROJECT-2",
+      "credit": 3,
+      "type": "Core"
+    },
+    {
+      "code": "18B11CI612",
+      "name": "SOFTWARE ENGINEERING",
+      "credit": 3,
+      "type": "Core"
+    },
+    {
+      "code": "18B11CI414",
+      "name": "COMPUTER ORGANISATION AND ARCHITECTURE",
+      "credit": 4,
+      "type": "Core"
+    },
+    {
+      "code": "18B19HS599",
+      "name": "INDIAN CONSTITUTION & TRADITIONAL KNOWLEDGE",
+      "credit": 0,
+      "type": "Elective"
+    },
+    {
+      "code": "18B14CI547",
+      "name": "ADVANCED CONCEPTS IN DBMS",
+      "credit": 3,
+      "type": "Elective"
+    },
+    {
+      "code": "18B14HS650",
+      "name": "LOGICAL & QUANTITATIVE TECHNIQUES",
+      "credit": 3,
+      "type": "Elective"
+    }
+  ]

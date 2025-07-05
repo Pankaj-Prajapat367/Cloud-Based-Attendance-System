@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Batches</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/manage/batches">
+                <i class="fas fa-calendar-check me-2"></i>Attendance System
+            </a>
+            <div class="d-flex">
+                <a href="/login" class="btn btn-outline-light">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+  <div class="container py-5">
+    <h1 class="mb-4">
+      <i class="fas fa-layer-group me-2"></i> Manage Batches
+    </h1>
+
+    <form action="/manage/batches" method="POST" class="card p-4 mb-4">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <input type="text" class="form-control" name="name" placeholder="Batch Name" required>
+        </div>
+        <div class="col-md-6">
+          <input type="number" class="form-control" name="year" placeholder="Year" required>
+        </div>
+        <div class="col-12 text-end">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i>Add Batch
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <% if (batches.length === 0) { %>
+      <div class="alert alert-info">No batches found.</div>
+    <% } else { %>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Year</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% batches.forEach(batch => { %>
+            <tr>
+              <td><%= batch.name %></td>
+              <td><%= batch.year %></td>
+              <td>
+                <form action="/manage/batches/delete/<%= batch._id %>" method="POST" class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+</body>
+</html>

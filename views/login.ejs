@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title || 'Login - Cloud-Based Attendance System' %></title>
+  <%- include('partials/styles') %>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .login-container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .input-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: #2575fc;
+      outline: none;
+    }
+    .login-button {
+      width: 100%;
+      padding: 0.75rem;
+      background: #2575fc;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .login-button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .error-message {
+      color: #ff4d4d;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    .login-footer a {
+      color: #2575fc;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Welcome Back!</h1>
+    <p>Please login to access your account.</p>
+
+    <% if (messages && messages.error) { %>
+      <div class="error-message" style="display: block;">
+        <%= messages.error %>
+      </div>
+    <% } %>
+
+    <form id="login-form">
+      <div class="input-group">
+        <label for="role">Select Role</label>
+        <select id="role" required>
+          <option value="">Select your role</option>
+          <option value="admin">Admin</option>
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Enter your email" required>
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required>
+      </div>
+      <div class="error-message" id="error-message"></div>
+      <button type="submit" class="login-button" id="login-button">Login</button>
+    </form>
+
+    <div class="login-footer">
+      <p>Don't have an account? <a href="/signup">Sign Up</a></p>
+      <p><a href="/forgot-password">Forgot Password?</a></p>
+    </div>
+  </div>
+
+<!-- Keep all your existing HTML and CSS, just update the script section -->
+<script>
+  const API_URL = "<%= process.env.API_URL %>";
+  const loginButton = document.getElementById('login-button');
+  
+  // Reset button state when page loads or when returning via navigation
+  function resetButtonState() {
+      loginButton.disabled = false;
+      loginButton.textContent = 'Login';
+  }
+
+  // Reset on initial page load
+  window.addEventListener('load', resetButtonState);
+  
+  // Reset when page is shown (handles back/forward navigation)
+  window.addEventListener('pageshow', (event) => {
+      if (event.persisted) {
+          resetButtonState();
+      }
+  });
+
+  // Pre-warm connection if network is good
+  if (navigator.connection && navigator.connection.effectiveType !== 'slow-2g') {
+      fetch(`${API_URL}/ping`, { method: 'HEAD' }).catch(() => {});
+  }
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorElement = document.getElementById('error-message');
+      const originalButtonText = loginButton.textContent;
+      
+      // Update UI
+      loginButton.disabled = true;
+      loginButton.textContent = 'Signing in...';
+      errorElement.style.display = 'none';
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const role = document.getElementById('role').value;
+
+      try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
+          
+          const response = await fetch(`${API_URL}/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password, role }),
+              signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+          const data = await response.json();
+
+          if (!response.ok) {
+              throw new Error(data.message || "Login failed");
+          }
+
+          // Store tokens
+          document.cookie = `idToken=${data.AuthenticationResult.IdToken}; path=/; secure`;
+          localStorage.setItem('accessToken', data.AuthenticationResult.AccessToken);
+          
+          // Immediate redirect
+          window.location.href = `/${role}/dashboard`;
+          
+      } catch (error) {
+          // Restore UI
+          resetButtonState();
+          
+          // Show appropriate error message
+          errorElement.textContent = error.name === 'AbortError' 
+              ? "Login timed out. Please try again." 
+              : error.message;
+          errorElement.style.display = 'block';
+      }
+  });
+</script>
+</body>
+</html>
